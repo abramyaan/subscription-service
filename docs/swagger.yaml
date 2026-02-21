@@ -1,0 +1,242 @@
+openapi: 3.0.0
+info:
+  title: Subscription Service API
+  description: REST API для управления подписками пользователей
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: subscriptions
+    description: Операции с подписками
+  - name: health
+    description: Проверка здоровья сервиса
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags:
+        - health
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+  /api/v1/subscriptions:
+    get:
+      summary: Получить список подписок
+      tags:
+        - subscriptions
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+
+    post:
+      summary: Создать подписку
+      tags:
+        - subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201':
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /api/v1/subscriptions/{id}:
+    get:
+      summary: Получить по ID
+      tags:
+        - subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Успех
+    put:
+      summary: Обновить подписку
+      tags:
+        - subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubscriptionRequest'
+      responses:
+        '200':
+          description: Обновлено
+    delete:
+      summary: Удалить подписку
+      tags:
+        - subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Удалено
+
+  /api/v1/subscriptions/cost:
+    get:
+      summary: Рассчитать стоимость
+      tags:
+        - subscriptions
+      parameters:
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CostResponse'
+
+components:
+  schemas:
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        service_name:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        cost:
+          type: integer
+        start_date:
+          type: string
+        end_date:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateSubscriptionRequest:
+      type: object
+      required: [service_name, user_id, cost, start_date]
+      properties:
+        service_name:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        cost:
+          type: integer
+        start_date:
+          type: string
+        end_date:
+          type: string
+          nullable: true
+
+    UpdateSubscriptionRequest:
+      type: object
+      properties:
+        service_name:
+          type: string
+        cost:
+          type: integer
+        start_date:
+          type: string
+        end_date:
+          type: string
+          nullable: true
+
+    ListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    CostResponse:
+      type: object
+      properties:
+        total_cost:
+          type: integer
+        period:
+          type: string
+        count:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string

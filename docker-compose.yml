@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: subscription-postgres
+    environment:
+      POSTGRES_USER: subscriptions
+      POSTGRES_PASSWORD: subscriptions_password
+      POSTGRES_DB: subscriptions_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U subscriptions -d subscriptions_db"]  # <-- добавили -d subscriptions_db
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - subscription-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: subscription-service
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      SERVER_READ_TIMEOUT: 10s
+      SERVER_WRITE_TIMEOUT: 10s
+      
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: subscriptions
+      DB_PASSWORD: subscriptions_password
+      DB_NAME: subscriptions_db
+      DB_SSLMODE: disable
+      
+      LOG_LEVEL: info
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - subscription-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  subscription-network:
+    driver: bridge

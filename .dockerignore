@@ -1,0 +1,9 @@
+.git
+.env
+bin/
+vendor/
+docker-compose.yml
+Dockerfile
+
+*.exe
+*.test

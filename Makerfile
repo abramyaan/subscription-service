@@ -1,0 +1,85 @@
+.PHONY: help build run test docker-up docker-down clean swagger
+
+# По умолчанию показываем help
+.DEFAULT_GOAL := help
+
+help: ## Показать это сообщение
+	@echo "Доступные команды:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+build: ## Собрать приложение
+	@echo "Building application..."
+	go build -o bin/subscription-service ./cmd/api
+
+run: ## Запустить приложение локально
+	@echo "Running application..."
+	go run ./cmd/api/main.go
+
+test: ## Запустить тесты
+	@echo "Running tests..."
+	go test -v -race -coverprofile=coverage.out ./...
+
+coverage: test ## Показать покрытие тестами
+	@echo "Opening coverage report..."
+	go tool cover -html=coverage.out
+
+docker-build: ## Собрать Docker образ
+	@echo "Building Docker image..."
+	docker build -t subscription-service:latest .
+
+docker-up: ## Запустить сервисы через docker-compose
+	@echo "Starting services..."
+	docker-compose up -d
+
+docker-down: ## Остановить сервисы docker-compose
+	@echo "Stopping services..."
+	docker-compose down
+
+docker-logs: ## Показать логи docker-compose
+	docker-compose logs -f
+
+docker-restart: docker-down docker-up ## Перезапустить docker-compose
+
+swagger: ## Сгенерировать Swagger документацию
+	@echo "Generating Swagger docs..."
+	swag init -g cmd/api/main.go -o docs
+
+clean: ## Очистить собранные файлы
+	@echo "Cleaning..."
+	rm -rf bin/
+	rm -f coverage.out
+
+deps: ## Установить зависимости
+	@echo "Installing dependencies..."
+	go mod download
+	go mod tidy
+
+migrate-up: ## Применить миграции (требует запущенную БД)
+	@echo "Running migrations..."
+	docker-compose exec postgres psql -U subscriptions -d subscriptions_db -f /docker-entrypoint-initdb.d/001_init.sql
+
+lint: ## Запустить линтер
+	@echo "Running linter..."
+	golangci-lint run ./...
+
+fmt: ## Форматировать код
+	@echo "Formatting code..."
+	go fmt ./...
+	goimports -w .
+
+vet: ## Проверить код на ошибки
+	@echo "Vetting code..."
+	go vet ./...
+
+mod: ## Обновить зависимости
+	@echo "Updating dependencies..."
+	go get -u ./...
+	go mod tidy
+
+.env: ## Создать .env из примера
+	@if [ ! -f .env ]; then \
+		echo "Creating .env from .env.example..."; \
+		cp .env.example .env; \
+	else \
+		echo ".env already exists"; \
+	fi

@@ -1,4 +1,3 @@
-# Binaries
 *.exe
 *.exe~
 *.dll
@@ -7,37 +6,28 @@
 bin/
 dist/
 
-# Test binary
 *.test
 
-# Output of the go coverage tool
 *.out
 
-# Go workspace file
 go.work
 
-# Environment variables
 .env
 
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
 .DS_Store
 Thumbs.db
 
-# Dependencies
 vendor/
 
-# Logs
 *.log
 logs/
 
-# Database
 *.db
 *.sqlite
 ```
@@ -45,3 +35,47 @@ logs/
 **Git commit:**
 ```
 chore: add .gitignore
+
+
+```
+
+**Git commit:**
+```
+build: add docker-compose configuration
+```
+
+---
+
+```
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+bin/
+dist/
+*.exe
+*.test
+*.out
+
+*.log
+logs/
+
+.DS_Store
+Thumbs.db
+
+vendor/
+
+*.md
+!README.md
+
+.env.example
+```
+
+**Git commit:**
+```
+build: add .dockerignore file

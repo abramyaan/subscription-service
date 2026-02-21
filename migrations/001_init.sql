@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     )
 );
 
-CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX idx_subscriptions_service_name ON subscriptions(service_name);
-CREATE INDEX idx_subscriptions_start_date ON subscriptions(start_date);
-CREATE INDEX idx_subscriptions_end_date ON subscriptions(end_date);
-CREATE INDEX idx_subscriptions_user_service ON subscriptions(user_id, service_name);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_service_name ON subscriptions(service_name);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_start_date ON subscriptions(start_date);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_end_date ON subscriptions(end_date);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_service ON subscriptions(user_id, service_name);
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -28,6 +28,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_subscriptions_updated_at ON subscriptions;
 CREATE TRIGGER update_subscriptions_updated_at 
     BEFORE UPDATE ON subscriptions
     FOR EACH ROW
