@@ -1,6 +1,8 @@
 # Subscription Service
 
 REST API сервис для управления подписками пользователей.
+<img width="1153" height="1166" alt="image" src="https://github.com/user-attachments/assets/7eee87df-837a-4863-9db9-5009cac0a8cd" />
+
 
 ## 📋 Описание
 
